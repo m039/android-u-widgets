@@ -9,7 +9,12 @@
   I'm intended to add notes to source code if you're are using it, but
   the demo project is all you need.
 
-* Preview  
+  This code is using 14 api.
+
+* Files
+
+  [[http://dl.dropbox.com/u/7694224/device-2013-02-28-184154.png][Link to preview]]
+  [[http://dl.dropbox.com/u/7694224/UWidgetsDemoActivity.apk][Link to apk]]
 
 * Thanks
   Design by [[artfamily.info][Adno]]

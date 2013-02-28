@@ -9,7 +9,7 @@
   I'm intended to add notes to source code if you're are using it, but
   the demo project is all you need.
 
-  This code is using 14 api.
+  This code is using 14 api (running on 4+ Android).
 
 * Files
 

@@ -56,7 +56,7 @@ public class USwitch extends View
 
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.USwitch);
 
-        mUseXfermode = ta.getBoolean(R.styleable.USwitch_use_xfermode, false);
+        mUseXfermode = ta.getBoolean(R.styleable.USwitch_use_xfermode, mUseXfermode);
         mOffSide = ta.getInt(R.styleable.USwitch_off_side, mOffSide);
 
         Log.d(TAG, "USwitch: off_side = " + mOffSide);

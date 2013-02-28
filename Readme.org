@@ -1,0 +1,18 @@
+* About
+
+  This project containes demo with a sexy switch widget. 
+
+  Try it, use it and say me what you think.
+
+* Code
+  
+  I'm intended to add notes to source code if you're are using it, but
+  the demo project is all you need.
+
+* Preview  
+
+* Thanks
+  Design by [[artfamily.info][Adno]]
+  
+* License
+  This code is licensed under the terms of the Apache 2.0 license as listed in the LICENSE file.

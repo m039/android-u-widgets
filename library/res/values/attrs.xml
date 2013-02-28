@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+  <declare-styleable name="USwitch">
+    <attr name="use_xfermode" format="boolean"/>
+
+    <attr name="off_side">
+      <enum name="left" value="0" />
+      <enum name="right" value="1" />
+    </attr>
+    
+  </declare-styleable>
+  
+</resources>

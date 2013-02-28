@@ -2,12 +2,12 @@
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
        android:layout_width="match_parent"
        android:layout_height="match_parent"
+       xmlns:m039="http://schemas.android.com/apk/res/com.m039.ut.demo"
        >
 
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:background="#F00"
       >
 
     <LinearLayout
@@ -32,10 +32,12 @@
 
       </FrameLayout>
 
-      <FrameLayout
+      <LinearLayout
           android:layout_width="0dp"
           android:layout_height="match_parent"
           android:layout_weight="1"
+          android:gravity="center"
+          android:orientation="vertical"
           >
 
         <com.m039.ut.library.widgets.USwitch
@@ -46,10 +48,18 @@
             android:layout_gravity="center"
             />
 
-      </FrameLayout>
+        <com.m039.ut.library.widgets.USwitch
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            m039:use_xfermode="true"
+            m039:off_side="right"           
+            />
 
+      </LinearLayout>
     </LinearLayout>
-
   </RelativeLayout>
 
 </merge>

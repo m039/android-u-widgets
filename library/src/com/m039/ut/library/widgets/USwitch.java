@@ -14,8 +14,13 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -48,6 +53,19 @@ public class USwitch extends View
 
     public USwitch(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.USwitch);
+
+        mUseXfermode = ta.getBoolean(R.styleable.USwitch_use_xfermode, false);
+        mOffSide = ta.getInt(R.styleable.USwitch_off_side, mOffSide);
+
+        Log.d(TAG, "USwitch: off_side = " + mOffSide);
+
+        if (mDrawer != null) {
+            mDrawer.setChecked(isChecked());
+        } 
+
+        ta.recycle();
     }
 
 
@@ -58,6 +76,17 @@ public class USwitch extends View
 
     public void setOffSide(int side) {
         mOffSide = side;
+    }
+
+
+    public boolean mUseXfermode = false;
+
+    public void setUseXfermode(boolean usexfermode) {
+        mUseXfermode = usexfermode;
+    }
+
+    public boolean getUseXfermode() {
+        return mUseXfermode;
     }
 
 
@@ -73,28 +102,25 @@ public class USwitch extends View
 
     static Drawable mThumb = null;
     static Drawable mHole = null;
+    static Drawable mHoleRim = null;    
     static Drawable mPlate = null;
 
     class Drawer {
         Drawable thumb;
         Drawable hole;
+        Drawable holeRim;       
         Drawable plate;
-
-        Bitmap offscreen;
 
         int halfThumbWidth = 0;
         int halfPlateWidth = 0;
 
         float x = 0;              // only horizontal
 
-        Drawer(Drawable thumb, Drawable hole, Drawable plate) {
+        Drawer(Drawable thumb, Drawable hole, Drawable plate, Drawable holeRim) {
             this.thumb = thumb;
             this.hole = hole;
             this.plate = plate;
-
-            offscreen = Bitmap.createBitmap(hole.getIntrinsicWidth(),
-                                            hole.getIntrinsicHeight(),
-                                            Bitmap.Config.ARGB_8888);
+            this.holeRim = holeRim;
 
             halfThumbWidth = thumb.getIntrinsicWidth() / 2;
             halfPlateWidth = plate.getIntrinsicWidth() / 2;
@@ -109,45 +135,34 @@ public class USwitch extends View
 
             canvas.save(Canvas.ALL_SAVE_FLAG);
 
+            int sc = canvas.saveLayer(0, 0,
+                                      hole.getIntrinsicWidth(), hole.getIntrinsicHeight(), null,
+                                      Canvas.MATRIX_SAVE_FLAG |
+                                      Canvas.CLIP_SAVE_FLAG |
+                                      Canvas.HAS_ALPHA_LAYER_SAVE_FLAG |
+                                      Canvas.FULL_COLOR_LAYER_SAVE_FLAG |
+                                      Canvas.CLIP_TO_LAYER_SAVE_FLAG);
+
             canvas.save(Canvas.MATRIX_SAVE_FLAG);
             canvas.translate(-halfPlateWidth + x, 0);
             plate.draw(canvas);
             canvas.restore();
 
-            hole.draw(canvas);
+            if (hole instanceof BitmapDrawable && mUseXfermode) {
+                Paint p = ((BitmapDrawable) hole).getPaint();
 
-            // offscrren
+                p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_OUT));
+                hole.draw(canvas);
+                p.setXfermode(null);
 
-            // Canvas oc = new Canvas(offscreen);
+            } else {                
 
-            // hole.draw(oc);
+                hole.draw(canvas);
+            }
 
-            // oc.save(Canvas.MATRIX_SAVE_FLAG);
-            // oc.translate(-halfPlateWidth + x, 0);
-            // plate.draw(oc);
-            // oc.restore();
+            holeRim.draw(canvas);
 
-
-
-            //
-            // Remove magenta color
-            //
-            // Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-            // p.setColor(Color.MAGENTA);
-            // p.setAlpha(255);
-            // p.setXfermode(new AvoidXfermode(Color.MAGENTA, 0, AvoidXfermode.Mode.TARGET));
-            // oc.drawPaint(p);
-
-            // p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.XOR));
-            // oc.drawPaint(p);
-
-            // oc.drawPaint(p);
-            // p.setColor(Color.argb(255,
-            //                       Color.red(Color.MAGENTA),
-            //                       Color.green(Color.MAGENTA),
-            //                       Color.blue(Color.MAGENTA)));
-
-            // canvas.drawBitmap(offscreen, 0, 0, null);
+            canvas.restoreToCount(sc);
 
             canvas.save(Canvas.MATRIX_SAVE_FLAG);
             canvas.translate(-halfThumbWidth + x, 0);
@@ -301,24 +316,26 @@ public class USwitch extends View
 
         if (mHole == null) {
             mHole = res.getDrawable(R.drawable.uwidgets__uswitch__hole);
-            // mHole.setColorFilter(Color.MAGENTA, PorterDuff.Mode.XOR);
         }
 
         if (mPlate == null) {
             mPlate = res.getDrawable(R.drawable.uwidgets__uswitch__plate);
-            // mPlate.setColorFilter(Color.MAGENTA, PorterDuff.Mode.CLEAR);
+        }
+
+        if (mHoleRim == null) {
+            mHoleRim = res.getDrawable(R.drawable.uwidgets__uswitch__hole_rim);
         }
 
         for(Drawable d : new Drawable[] {
-                mThumb, mHole, mPlate
+                mThumb, mHole, mPlate, mHoleRim
                 }) {
             if (d != null) {
                 setDefaultBounds(d);
             }
         }
 
-        if (mThumb != null && mHole != null && mPlate != null) {
-            mDrawer = new Drawer(mThumb, mHole, mPlate);
+        if (mThumb != null && mHole != null && mPlate != null && mHoleRim != null) {
+            mDrawer = new Drawer(mThumb, mHole, mPlate, mHoleRim);
             mDrawer.setChecked(isChecked());
         }
     }
@@ -327,7 +344,7 @@ public class USwitch extends View
     float mDownValue = 0;
     boolean mDownLeft = false;
     boolean mMoved = false;
-    
+
     @Override
     public boolean onTouchEvent (MotionEvent ev) {
         boolean result = super.onTouchEvent(ev);
@@ -363,10 +380,10 @@ public class USwitch extends View
 
                 return true;
 
-            } else  if (action == MotionEvent.ACTION_CANCEL) {              
+            } else  if (action == MotionEvent.ACTION_CANCEL) {
 
                 if (mMoved) {
-                
+
                     if (mDownLeft) {
                         mDrawerAnimator.move(0);
                     } else {
@@ -375,7 +392,7 @@ public class USwitch extends View
 
                     mMoved = false;
                 }
-                
+
             } else  if (action == MotionEvent.ACTION_UP) {
 
                 if (mDrawer.isLeftSide(mDrawer.x)) {
@@ -397,8 +414,6 @@ public class USwitch extends View
     void setDefaultBounds(Drawable d) {
         d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
     }
-
-
 
     boolean mIsChecked = false;
 
@@ -442,7 +457,6 @@ public class USwitch extends View
         setChecked(!isChecked());
     }
 
-
     @Override
     public void onMeasure (int widthMeasureSpec, int heightMeasureSpec) {
         int width = 0;
@@ -480,7 +494,7 @@ public class USwitch extends View
             mDrawer.onDraw(canvas);
         }
 
-        super.onDraw(canvas);       
+        super.onDraw(canvas);
     }
 
     //
@@ -489,12 +503,16 @@ public class USwitch extends View
 
     public static final String EXTRA_CHECKED = "com.m039.ut.library.widgets.extra.checked";
     public static final String EXTRA_SUPER_STATE = "com.m039.ut.library.widgets.extra.super_state";
+    public static final String EXTRA_USE_XFERMODE = "com.m039.ut.library.widgets.extra.use_xfermode";
 
     @Override
     protected void onRestoreInstanceState (Parcelable state) {
         if (state instanceof Bundle) {
             Bundle bundle = (Bundle) state;
+
+            mUseXfermode =  bundle.getBoolean(EXTRA_USE_XFERMODE, mUseXfermode);
             setChecked(bundle.getBoolean(EXTRA_CHECKED, mIsChecked));
+
             super.onRestoreInstanceState(bundle.getParcelable(EXTRA_SUPER_STATE));
         } else {
             super.onRestoreInstanceState(state);
@@ -506,6 +524,7 @@ public class USwitch extends View
         Bundle state = new Bundle();
 
         state.putBoolean(EXTRA_CHECKED, mIsChecked);
+        state.putBoolean(EXTRA_USE_XFERMODE, mUseXfermode);
         state.putParcelable(EXTRA_SUPER_STATE, super.onSaveInstanceState());
 
         return state;
